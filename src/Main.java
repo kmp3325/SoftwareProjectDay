@@ -71,7 +71,9 @@ public class Main {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            main.notifyAll();
+            synchronized (main) {
+                main.notifyAll();
+            }
         }
         //
         // while not end of day
