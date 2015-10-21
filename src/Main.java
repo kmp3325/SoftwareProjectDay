@@ -15,7 +15,29 @@ public class Main {
         return time;
     }
 
+    public void incrementTime() {
+        time++;
+    }
+
     public synchronized void enterMeetingRoom(int teamNumber) {
+        while (meetingRoomOccupied) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Stand-up for team "+teamNumber+" has begun.");
+        meetingRoomOccupied = true;
+        long endOfMeeting = time + 15;
+        while (time < endOfMeeting) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Stand-up has finished for team "+teamNumber+".");
         // while meeting room is occupied
         //   wait
         // meetingRoomOccupied = true
@@ -41,6 +63,16 @@ public class Main {
         // add all threads to a starting gate for a synchronous start
         manager.start();
         manager.getTeams().forEach(t -> t.forEach(e -> e.start()));
+
+        while (main.getTime() < 540) {
+            main.incrementTime();
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            main.notifyAll();
+        }
         //
         // while not end of day
         //   time+=10
