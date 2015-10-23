@@ -1,22 +1,15 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class Main {
 
-    private long time;
+    private static Time time;
     private boolean meetingRoomOccupied;
 
     public Main() {
-        time = 0;
         this.meetingRoomOccupied = false;
-    }
-
-    public long getTime() {
-        return time;
-    }
-
-    public void incrementTime() {
-        time++;
+        this.time = new Time();
     }
 
     public synchronized void enterMeetingRoom(int teamNumber) {
@@ -29,14 +22,14 @@ public class Main {
         }
         System.out.println("Stand-up for team "+teamNumber+" has begun.");
         meetingRoomOccupied = true;
-        long endOfMeeting = time + 15;
-        while (time < endOfMeeting) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        //long endOfMeeting = t + 15;
+        //while (time < endOfMeeting) {
+          //  try {
+            //    wait();
+            //} catch (InterruptedException e) {
+              //  e.printStackTrace();
+            //}
+        //}
         System.out.println("Stand-up has finished for team "+teamNumber+".");
         // while meeting room is occupied
         //   wait
@@ -48,24 +41,26 @@ public class Main {
 
     public static void main(String[] args) {
         Main main = new Main();
-
+        final CountDownLatch managerOffice = new CountDownLatch(3);
         List<List<Employee>> teams = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
             teams.add(new ArrayList<>());
             for (int j = 0; j < 4; j++) {
-                Employee employee = new Employee(main, j, i);
+                Employee employee = new Employee(time,managerOffice,main, j + 1, i + 1);
                 teams.get(i).add(employee);
             }
         }
-
-        Manager manager = new Manager(teams);
+        time.start();
+        long currentTime = time.getTime();
+        Manager manager = new Manager(teams, managerOffice,time);
         // add all threads to a starting gate for a synchronous start
         manager.start();
         manager.getTeams().forEach(t -> t.forEach(e -> e.start()));
 
-        while (main.getTime() < 540) {
-            main.incrementTime();
+
+        while (currentTime < 540) {
+            currentTime = time.getTime();
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {

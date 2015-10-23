@@ -1,3 +1,5 @@
+import java.util.concurrent.CountDownLatch;
+
 public class Employee extends Thread {
 
     private final Main main;
@@ -6,33 +8,62 @@ public class Employee extends Thread {
     private boolean occupied;
     private long lunchBreakTime;
     private boolean arrived;
+    private Time time;
+    private CountDownLatch standUpLatch;
 
-    public Employee(Main main, int number, int teamNumber) {
+    public Employee(Time t,CountDownLatch standUpLatch, Main main, int number, int teamNumber) {
         this.main = main;
         this.number = number;
         this.teamNumber = teamNumber;
         this.occupied = true;
         this.lunchBreakTime = 0;
         this.arrived = false;
+        this.standUpLatch = standUpLatch;
+        this.time = t;
     }
 
-    public void run() {
-        // determine arrive time (8-830)
-        // while not arrival time
-        //   wait
-        // print arrived
-        // arrived = true
-        // if team lead
-        //   managerStandUp
-        //   standUp
-        // determine lunch time
-        // while not lunch and not occupied
-        //   wait
-        // lunch break (occupied)
-        // determine end of day
-        // while not end of day and not occupied
-        //   wait
-        // print this employee leaves
+
+        public void run () {
+            try{
+                // determine arrive time (8-830)
+                long endDay = time.getEndDay();
+                int arrivalTime = (int) (Math.random() * 300 + 1);
+                int leaveTime = arrivalTime + 4800;
+                sleep(arrivalTime);
+
+                // print arrived
+                System.out.println(time.toString() + " Employee" + teamNumber
+                        + number + " has arrived.");
+                // arrived = true
+                if (this.number == 1) {
+                    standUpLatch.countDown();
+                }
+                //   managerStandUp
+                //   standUp
+                // determine lunch time
+                int lunchDuration = (int) (Math.random() * 600 + 1);
+                while(time.getTime() < 5400) {
+
+                    if(time.getTime() >= leaveTime){
+                        System.out.println(time.toString() + " Employee" + teamNumber
+                                + number + " has left for the day");
+                        break;
+                    }
+                    else{
+                        Thread.sleep(10);
+                    }
+                }
+
+                //while not lunch and not occupied
+                //   wait
+                // lunch break (occupied)
+                // determine end of day
+                // while not end of day and not occupied
+                //   wait
+                // print this employee leaves
+            }catch(InterruptedException ie){
+                ie.printStackTrace();
+                }
     }
 
     public int getNumber() {
