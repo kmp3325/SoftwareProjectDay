@@ -23,6 +23,7 @@ public class Manager extends Thread {
         try {
         // print arrives at 8
             System.out.println(time.toString() + " Manager has arrived.");
+            managerOffice.await();
             System.out.println(time.toString() + " Daily stand up meeting has started");
             morningStandUp();
             System.out.println(time.toString() + " Daily stand up meeting had ended");

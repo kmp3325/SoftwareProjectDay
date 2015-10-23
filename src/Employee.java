@@ -28,9 +28,8 @@ public class Employee extends Thread {
                 // determine arrive time (8-830)
                 long endDay = time.getEndDay();
                 int arrivalTime = (int) (Math.random() * 300 + 1);
-                int leaveTime = arrivalTime + 4800;
+                int leaveTime = arrivalTime + 4840;
                 sleep(arrivalTime);
-
                 // print arrived
                 System.out.println(time.toString() + " Employee" + teamNumber
                         + number + " has arrived.");
@@ -44,14 +43,13 @@ public class Employee extends Thread {
                 int lunchDuration = (int) (Math.random() * 600 + 1);
                 while(time.getTime() < 5400) {
 
-                    if(time.getTime() >= leaveTime){
-                        System.out.println(time.toString() + " Employee" + teamNumber
-                                + number + " has left for the day");
-                        break;
-                    }
-                    else{
+                    while(time.getTime() <= leaveTime){
+
                         Thread.sleep(10);
                     }
+                    System.out.println(time.toString() + " Employee" + teamNumber
+                            + number + " has left for the day");
+                    break;
                 }
 
                 //while not lunch and not occupied
