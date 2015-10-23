@@ -28,6 +28,15 @@ public class Manager extends Thread {
             morningStandUp();
             System.out.println(time.toString() + " Daily stand up meeting had ended");
             // while not 10 and not occupied
+            while(time.getTime() < 1200){
+                Thread.sleep(10);
+            }
+            if(this.busy == false){
+                executiveMeeting10();
+            }else{
+                //TODO finish whatever manager is doing, then go to meeting.
+            }
+
             //   wait
             // occupied = true
             // while not 11
@@ -35,12 +44,33 @@ public class Manager extends Thread {
             // occupied = false
             // determine lunch
                 // while not lunch and not occupied
+            while (time.getTime() < 2400) {
+                Thread.sleep(10);
+            }
+            if(this.busy == false) {
+
+                System.out.println(time.toString() + " Manager has left for lunch.");
+                this.busy = true;
+                Thread.sleep(600);
+                System.out.println(time.toString() + " Manager has returned from lunch.");
+                this.busy = false;
+            }else{
+                //TODO finish whatever he is doing, then go to lunch
+            }
             //   wait
             // occupied = true
             // while not end of lunch
             //   wait
             // occupied = false
             // while not 2 and not occupied
+            while(time.getTime() < 3600 ){
+                Thread.sleep(10);
+            }
+            if(this.busy == false) {
+                executiveMeeting2();
+            }else{
+                //TODO finish whatever he is doing, then go to meeting.
+            }
             //   wait
             // occupied = true
             // while not 3
@@ -79,5 +109,34 @@ public class Manager extends Thread {
         }catch(InterruptedException e){
             e.printStackTrace();
         }
+        this.busy = false;
+    }
+
+    public synchronized void executiveMeeting10(){
+        this.busy = true;
+        System.out.println(time.toString() + " Executive meeting has started.");
+        while(time.getTime() <= 1800){
+            try {
+                Thread.sleep(10);
+            }catch(InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+        System.out.println(time.toString() + " Executive meeting has ended.");
+        this.busy = false;
+    }
+    public synchronized void executiveMeeting2(){
+        this.busy = true;
+        System.out.println(time.toString() + " Executive meeting has started.");
+        while(time.getTime() <= 4200){
+            try {
+                Thread.sleep(10);
+            }catch(InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+        System.out.println(time.toString() + " Executive meeting has ended.");
+        this.busy = false;
+
     }
 }

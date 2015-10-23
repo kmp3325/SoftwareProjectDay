@@ -24,11 +24,16 @@ public class Employee extends Thread {
 
 
         public void run () {
-            try{
+            try {
                 // determine arrive time (8-830)
                 long endDay = time.getEndDay();
                 int arrivalTime = (int) (Math.random() * 300 + 1);
                 int leaveTime = arrivalTime + 4840;
+                int lunchDuration = (int) (Math.random() * 300 + 1);
+                int lunchTime = (int) (Math.random() * 300 + 1);
+                lunchDuration = lunchDuration + 300;
+                lunchTime = 2400 + lunchTime;
+
                 sleep(arrivalTime);
                 // print arrived
                 System.out.println(time.toString() + " Employee" + teamNumber
@@ -40,18 +45,27 @@ public class Employee extends Thread {
                 //   managerStandUp
                 //   standUp
                 // determine lunch time
-                int lunchDuration = (int) (Math.random() * 600 + 1);
-                while(time.getTime() < 5400) {
 
-                    while(time.getTime() <= leaveTime){
+                while (time.getTime() < 5400) {
 
+                    while (time.getTime() <= lunchTime) {
                         Thread.sleep(10);
                     }
                     System.out.println(time.toString() + " Employee" + teamNumber
+                            + number + " has left for lunch.");
+                    Thread.sleep(lunchDuration);
+                    System.out.println(time.toString() + " Employee" + teamNumber
+                            + number + " has returned from lunch");
+
+                    while (time.getTime() <= leaveTime) {
+                        Thread.sleep(10);
+                    }
+
+                    System.out.println(time.toString() + " Employee" + teamNumber
                             + number + " has left for the day");
                     break;
-                }
 
+                    }
                 //while not lunch and not occupied
                 //   wait
                 // lunch break (occupied)
@@ -59,9 +73,10 @@ public class Employee extends Thread {
                 // while not end of day and not occupied
                 //   wait
                 // print this employee leaves
-            }catch(InterruptedException ie){
-                ie.printStackTrace();
-                }
+                }catch(InterruptedException ie){
+                    ie.printStackTrace();
+                    }
+
     }
 
     public int getNumber() {
