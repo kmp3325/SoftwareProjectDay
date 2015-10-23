@@ -28,17 +28,18 @@ public class Employee extends Thread {
                 // determine arrive time (8-830)
                 long endDay = time.getEndDay();
                 int arrivalTime = (int) (Math.random() * 300 + 1);
+                int maxDuration = 300 - arrivalTime;
                 int leaveTime = arrivalTime + 4840;
-                int lunchDuration = (int) (Math.random() * 300 + 1);
+                int lunchDuration = (int) (Math.random() * maxDuration + 1);
                 int lunchTime = (int) (Math.random() * 300 + 1);
                 lunchDuration = lunchDuration + 300;
                 lunchTime = 2400 + lunchTime;
-
                 sleep(arrivalTime);
                 // print arrived
                 System.out.println(time.toString() + " Employee" + teamNumber
                         + number + " has arrived.");
                 // arrived = true
+                this.arrived = true;
                 if (this.number == 1) {
                     standUpLatch.countDown();
                 }
