@@ -15,6 +15,8 @@ public class Employee extends Thread {
     private volatile boolean afternoonStandUpComplete;
     private volatile boolean teamStandUpComplete;
 
+    private static final double CHANCE_FOR_QUESTION_ON_GIVEN_MINUTE = .999;
+
     public Employee(int number, int teamNumber, Time time, CountDownLatch morningStandUp, CountDownLatch afternoonStandUp, CountDownLatch teamStandUp, Manager manager, Metrics metrics) {
         this.number = number;
         this.teamNumber = teamNumber;
@@ -151,7 +153,7 @@ public class Employee extends Thread {
 
     private void work() {
         synchronized (time) {
-            if (Math.random() > .999 && !occupied) {
+            if (Math.random() > CHANCE_FOR_QUESTION_ON_GIVEN_MINUTE && !occupied) {
                 occupied = true;
                 System.out.println(time + " " + this + " has a question.");
                 if (number == 0) {
@@ -172,6 +174,7 @@ public class Employee extends Thread {
 
     public void askQuestion(Employee employee) {
         synchronized (time) {
+            employee.getMetrics().increaseNumberOfQuestions(1);
             System.out.println(time + " " + employee + " is waiting for tech lead to answer question.");
             while (occupied) {
                 try {
@@ -185,20 +188,20 @@ public class Employee extends Thread {
                 System.out.println(time + " tech lead answered " + employee + "'s question.");
             } else {
                 System.out.println(time + " tech lead cannot answer " + employee + "'s question, going to manager."); int startTimeForMetrics = time.getTime();
-                manager.askQuestion(employee); metrics.increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); metrics.increaseQuestionTime(10); employee.getMetrics().increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); employee.getMetrics().increaseQuestionTime(10);
+                manager.askQuestion(employee); metrics.increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); metrics.increaseQuestionTime(10); if (employee != this) employee.getMetrics().increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); employee.getMetrics().increaseQuestionTime(10);
             }
             occupied = false;
         }
     }
 
     private void standUp() {
-        System.out.println(time + " Team" + teamNumber + " is waiting for meeting room for team stand-up.");
-        time.claimMeetingRoom(this);
+        System.out.println(time + " Team" + teamNumber + " is waiting for meeting room for team stand-up."); int startForMetrics = time.getTime();
+        time.claimMeetingRoom(this); metrics.increaseWaitingForManagerTime(time.getTime() - startForMetrics - 15); metrics.increaseMeetingTime(15);
         occupied = false;
         manager.getTeams().get(teamNumber).forEach(e -> {
             e.setStandUpDone("Team");
             e.setOccupied(false);
-        }); metrics.increaseMeetingTime(15);
+        });
     }
 
     public String toString() {
