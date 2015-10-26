@@ -39,6 +39,12 @@ public class Metrics {
     }
 
     public String toString() {
-        return String.format("Working: %s --- Lunch: %s --- Meetings: %s --- Waiting: %s --- Questions: %s ---", format(timeSpentWorking), format(timeSpentAtLunch), format(timeSpentInMeetings), format(timeSpentWaitingForManager), format(timeSpentOnQuestions));
+        return String.format("Total Paid Time %s --- Working: %s --- Lunch: %s --- Meetings: %s --- Waiting: %s --- Questions: %s",
+                format(timeSpentWorking + timeSpentInMeetings + timeSpentWaitingForManager + timeSpentOnQuestions),
+                format(timeSpentWorking),
+                format(timeSpentAtLunch),
+                format(timeSpentInMeetings),
+                format(timeSpentWaitingForManager),
+                format(timeSpentOnQuestions));
     }
 }
