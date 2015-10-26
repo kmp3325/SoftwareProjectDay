@@ -78,6 +78,7 @@ public class Manager extends Thread {
         e.wait(10);
         System.out.println(time.toString() + " Manager answers question for " +
             e.toString());
+        this.busy = false;
 
         // occupied = false
         }catch(InterruptedException ie){

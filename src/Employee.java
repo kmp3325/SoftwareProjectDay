@@ -38,7 +38,7 @@ public class Employee extends Thread {
                 lunchTime = 2400 + lunchTime;
                 sleep(arrivalTime);
                 // print arrived
-                System.out.println(this.toString() + " has arrived.");
+                System.out.println(time.toString() + this.toString() + " has arrived.");
                 // arrived = true
                 this.arrived = true;
                 if (this.number == 1) {
@@ -54,18 +54,16 @@ public class Employee extends Thread {
 
                     while (time.getTime() <= lunchTime) {
                         work();
-
                     }
-                    System.out.println(this.toString() + " has left for lunch.");
+                    System.out.println(time.toString() + this.toString() + " has left for lunch.");
                     Thread.sleep(lunchDuration);
-                    System.out.println(this.toString() + " has returned from lunch");
+                    System.out.println(time.toString() + this.toString() + " has returned from lunch");
 
                     while (time.getTime() <= leaveTime) {
                         work();
-                        //Thread.sleep(10);
                     }
 
-                    System.out.println(this.toString() + " has left for the day");
+                    System.out.println(time.toString() + this.toString() + " has left for the day");
                     break;
 
                     }
@@ -109,8 +107,13 @@ public class Employee extends Thread {
         int questionChance = (int) (Math.random() * 1000 + 1);
         if(questionChance == 9){
             this.occupied = true;
-            System.out.println(this.toString() +  " has a question");
-            askQuestion(this.number);
+            System.out.println(time.toString() + this.toString() +  " has a question");
+            if(number == 1){
+                TLaskQuestion();
+            }
+            else {
+                askQuestion();
+            }
         }
 
         else{
@@ -124,21 +127,26 @@ public class Employee extends Thread {
 
     }
 
-    public synchronized void askQuestion(int employeeNumber) {
+    public synchronized void askQuestion() {
         int answerChance = (int) (Math.random() * 2 + 1);
         if(answerChance == 1){
             System.out.println(time.toString() + " Tech lead answers for Employee" +
-                teamNumber + number);
+                    teamNumber + number);
         }
         else{
             this.manager.askQuestion(this);
         }
         this.occupied = false;
     }
+    public synchronized void TLaskQuestion(){
+        this.occupied = true;
+        this.manager.askQuestion(this);
+        this.occupied = false;
+    }
 
     @Override
     public String toString(){
-        String s = time.toString() + " Employee" + teamNumber
+        String s = " Employee" + teamNumber
                 + number;
         return s;
     }
