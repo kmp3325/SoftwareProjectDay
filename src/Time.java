@@ -1,50 +1,48 @@
-import java.time.Clock;
+public class Time {
 
-/**
- * Created by Kevin on 10/21/2015.
- */public class Time {
+    private int time;
+    private boolean meetingRoomOccupied;
 
-    private long startTime;
-    private long elapsedTime;
-    private long endDay;
-    private int hour;
-    private int minutes;
-
-    public Time(){
-
-        this.startTime = 0;
-        this.elapsedTime = 0;
-        this.endDay = 0;
-        this.hour = 8;
-        this.minutes = 0;
+    public Time() {
+        this.time = 0;
+        this.meetingRoomOccupied = false;
     }
 
-    public void start(){
-
-        startTime = System.currentTimeMillis();
-        endDay = startTime + 5400;
+    public int getTime(){
+        return time;
     }
 
-    public long getTime(){
-        elapsedTime = System.currentTimeMillis() - startTime;
-        return elapsedTime;
+    public void incrementTime() {
+        time++;
+    }
+
+    public synchronized void claimMeetingRoom(Employee employee) {
+        System.out.println(this + " " + employee + " (the tech lead) is waiting for the meeting room for team stand-up.");
+        while(meetingRoomOccupied) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        meetingRoomOccupied = true;
+        System.out.println(this + " Team " + employee.getTeamNumber() + " stand-up meeting begins.");
+        int endTime = time + 15;
+        while (time < endTime) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        meetingRoomOccupied = false;
+        System.out.println(this + " Team " + employee.getTeamNumber() + " stand-up meeting ends.");
     }
 
     @Override
-    public String toString(){
-        getTime();
-        minutes = (int) elapsedTime / 10;
-        int elapsedHours = minutes/60;
-        minutes = (int) minutes - (elapsedHours * 60);
-        int otherHour = elapsedHours + hour;
-        String s = String.format("%01d:%02d", otherHour, minutes);
-        //elapsedHours = 0;
-        minutes = 0;
-        return s;
+    public String toString() {
+        int hour = ((time / 60) + 8) % 13;
+        if (hour < 8) hour++;
+        return String.format("%01d:%02d", hour, time % 60);
     }
-
-    public long getEndDay(){
-        return endDay;
-    }
-
 }

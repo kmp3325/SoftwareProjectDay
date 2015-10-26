@@ -2,131 +2,201 @@ import java.util.concurrent.CountDownLatch;
 
 public class Employee extends Thread {
 
-    private final Main main;
     private final int number;
     private final int teamNumber;
-    private boolean occupied;
-    private long lunchBreakTime;
-    private boolean arrived;
-    private Time time;
-    private CountDownLatch standUpLatch;
+    private final Time time;
+    private final CountDownLatch morningStandUp;
+    private final CountDownLatch afternoonStandUp;
+    private final CountDownLatch teamStandUp;
+    private final Manager manager;
+    private volatile boolean occupied;
+    private volatile boolean morningStandUpComplete;
+    private volatile boolean afternoonStandUpComplete;
+    private volatile boolean teamStandUpComplete;
 
-    public Employee(Time t,CountDownLatch standUpLatch, Main main, int number, int teamNumber) {
-        this.main = main;
+    public Employee(int number, int teamNumber, Time time, CountDownLatch morningStandUp, CountDownLatch afternoonStandUp, CountDownLatch teamStandUp, Manager manager) {
         this.number = number;
         this.teamNumber = teamNumber;
-        this.occupied = true;
-        this.lunchBreakTime = 0;
-        this.arrived = false;
-        this.standUpLatch = standUpLatch;
-        this.time = t;
+        this.time = time;
+        this.morningStandUp = morningStandUp;
+        this.afternoonStandUp = afternoonStandUp;
+        this.teamStandUp = teamStandUp;
+        this.manager = manager;
+        this.occupied = false;
+        this.morningStandUpComplete = false;
+        this.afternoonStandUpComplete = false;
+        this.teamStandUpComplete = false;
     }
 
+    public void run() {
+        int arrivalTime = (int)(Math.random() * 30);
+        waitUntil(arrivalTime);
+        System.out.println(time + " " + this + " has arrived.");
 
-        public void run () {
+        if (number == 0) {
+            morningStandUp.countDown();
+            waitUntilStandUpComplete("Morning");
+            occupied = true;
             try {
-                // determine arrive time (8-830)
-                long endDay = time.getEndDay();
-                int arrivalTime = (int) (Math.random() * 300 + 1);
-                int maxDuration = 300 - arrivalTime;
-                int leaveTime = arrivalTime + 4840;
-                int lunchDuration = (int) (Math.random() * maxDuration + 1);
-                int lunchTime = (int) (Math.random() * 300 + 1);
-                lunchDuration = lunchDuration + 300;
-                lunchTime = 2400 + lunchTime;
-                sleep(arrivalTime);
-                // print arrived
-                System.out.println(time.toString() + " Employee" + teamNumber
-                        + number + " has arrived.");
-                // arrived = true
-                this.arrived = true;
-                if (this.number == 1) {
-                    standUpLatch.countDown();
-                }
-                //   managerStandUp
-                //   standUp
-                // determine lunch time
+                teamStandUp.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            standUp();
+        } else {
+            teamStandUp.countDown();
+            waitUntilStandUpComplete("Team");
+        }
 
-                while (time.getTime() < 5400) {
+        workUntil(240);
 
-                    while (time.getTime() <= lunchTime) {
-                        Thread.sleep(10);
-                    }
-                    System.out.println(time.toString() + " Employee" + teamNumber
-                            + number + " has left for lunch.");
-                    Thread.sleep(lunchDuration);
-                    System.out.println(time.toString() + " Employee" + teamNumber
-                            + number + " has returned from lunch");
+        System.out.println(time + " "+ this + " goes on lunch break.");
+        int lunchTime = (int)(Math.random() * (30 - arrivalTime)) + 30;
+        busyUntil(lunchTime + 240);
+        System.out.println(time + " "+ this + " returns from lunch.");
 
-                    while (time.getTime() <= leaveTime) {
-                        Thread.sleep(10);
-                    }
+        if (number == 0) {
+            workUntil(480);
+            System.out.println(time + " " + this + " arrives at managers office for afternoon stand-up.");
+            afternoonStandUp.countDown();
+            waitUntilStandUpComplete("Afternoon");
+        }
 
-                    System.out.println(time.toString() + " Employee" + teamNumber
-                            + number + " has left for the day");
-                    break;
-
-                    }
-                //while not lunch and not occupied
-                //   wait
-                // lunch break (occupied)
-                // determine end of day
-                // while not end of day and not occupied
-                //   wait
-                // print this employee leaves
-                }catch(InterruptedException ie){
-                    ie.printStackTrace();
-                    }
-
-    }
-
-    public int getNumber() {
-        return number;
+        int endOfDay = arrivalTime + lunchTime + 480;
+        workUntil(endOfDay);
+        System.out.println(time + " " + this + " leaves for the end of the day.");
     }
 
     public int getTeamNumber() {
         return teamNumber;
     }
 
-    public boolean getOccupied() {
-        return occupied;
+    public synchronized void setOccupied(boolean occupied) {
+        this.occupied = occupied;
     }
 
-    public void managerStandUp() {
-        // while all team leads have not arrived
-        //   wait
-        // print "team lead for team X joins manager stand up"
-        // while not end of manager standup (15 mins)
-        //   wait
-        // print "team lead for team X leaves manager stand up"
+    public synchronized void setStandUpDone(String timeOfDay) {
+        switch(timeOfDay) {
+            case "Morning":
+                this.morningStandUpComplete = true;
+                break;
+            case "Afternoon":
+                this.afternoonStandUpComplete = true;
+                break;
+            default:
+                this.teamStandUpComplete = true;
+        }
     }
 
-    public void standUp() {
-        // print "Lead for team teamNumber is waiting for full team to start stand-up."
-        // while all team members have not arrived
-        //   wait
-        // enterMeetingRoom
-        // set all team members to occupied = false
+    public boolean getStandUpComplete(String timeOfDay) {
+        switch(timeOfDay) {
+            case "Morning":
+                return morningStandUpComplete;
+            case "Afternoon":
+                return afternoonStandUpComplete;
+            default:
+                return teamStandUpComplete;
+        }
     }
 
-    public void work() {
-        // if has question (some really low percentage)
-        //   occupied = true
-        //   print "has a question"
-        //   tech lead.askQuestion()
-        // else
-        //   wait
+    private void busyUntil(int endTime) {
+        synchronized (time) {
+            occupied = true;
+            while (time.getTime() < endTime) {
+                try {
+                    time.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            occupied = false;
+        }
     }
 
-    public synchronized void askQuestion(int employeeNumber) {
-        // while occupied
-        //   wait
-        // occupied = true
-        // if can answer
-        //   print "tech lead answers X's question"
-        // else
-        //   print "tech lead cannot answer question, must ask manager"
-        //   manager.askQuestion()
-        // occupied = false
+    private void waitUntil(int endTime) {
+        synchronized (time) {
+            while (time.getTime() < endTime || occupied) {
+                try {
+                    time.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void workUntil(int endTime) {
+        while (time.getTime() < endTime || occupied) {
+            work();
+        }
+    }
+
+    private void waitUntilStandUpComplete(String timeOfDay) {
+        occupied = true;
+        synchronized (time) {
+            while (!getStandUpComplete(timeOfDay)) {
+                try {
+                    time.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void work() {
+        synchronized (time) {
+            if (Math.random() > .999 && !occupied) {
+                occupied = true;
+                System.out.println(time + " " + this + " has a question.");
+                if (number == 0) {
+                    manager.askQuestion(this);
+                } else {
+                    manager.getTeams().get(teamNumber).get(0).askQuestion(this);
+                }
+                occupied = false;
+            } else {
+                try {
+                    time.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void askQuestion(Employee employee) {
+        synchronized (time) {
+            System.out.println(time + " " + employee + " is waiting for tech lead to answer question.");
+            while (occupied) {
+                try {
+                    time.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            occupied = true;
+            if (Math.random() > .5) {
+                System.out.println(time + " tech lead answered " + employee + "'s question.");
+            } else {
+                System.out.println(time + " tech lead cannot answer " + employee + "'s question, going to manager.");
+                manager.askQuestion(employee);
+            }
+            occupied = false;
+        }
+    }
+
+    private void standUp() {
+        System.out.println(time + " Team" + teamNumber + " is waiting for meeting room for team stand-up.");
+        time.claimMeetingRoom(this);
+        occupied = false;
+        manager.getTeams().get(teamNumber).forEach(e -> {
+            e.setStandUpDone("Team");
+            e.setOccupied(false);
+        });
+    }
+
+    public String toString() {
+        return String.format("Employee %d%d", teamNumber, number);
     }
 }
