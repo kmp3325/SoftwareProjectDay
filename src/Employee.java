@@ -156,11 +156,12 @@ public class Employee extends Thread {
             if (Math.random() > CHANCE_FOR_QUESTION_ON_GIVEN_MINUTE && !occupied) {
                 occupied = true;
                 System.out.println(time + " " + this + " has a question.");
+                metrics.increaseNumberOfQuestions(1); int startTimeForMetrics = time.getTime();
                 if (number == 0) {
                     manager.askQuestion(this);
                 } else {
                     manager.getTeams().get(teamNumber).get(0).askQuestion(this);
-                }
+                } metrics.increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); metrics.increaseQuestionTime(10);
                 occupied = false;
             } else {
                 try {
@@ -174,7 +175,6 @@ public class Employee extends Thread {
 
     public void askQuestion(Employee employee) {
         synchronized (time) {
-            employee.getMetrics().increaseNumberOfQuestions(1);
             System.out.println(time + " " + employee + " is waiting for tech lead to answer question.");
             while (occupied) {
                 try {
@@ -188,7 +188,7 @@ public class Employee extends Thread {
                 System.out.println(time + " tech lead answered " + employee + "'s question.");
             } else {
                 System.out.println(time + " tech lead cannot answer " + employee + "'s question, going to manager."); int startTimeForMetrics = time.getTime();
-                manager.askQuestion(employee); metrics.increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); metrics.increaseQuestionTime(10); if (employee != this) employee.getMetrics().increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); employee.getMetrics().increaseQuestionTime(10);
+                manager.askQuestion(employee); metrics.increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); metrics.increaseQuestionTime(10);
             }
             occupied = false;
         }
@@ -205,6 +205,6 @@ public class Employee extends Thread {
     }
 
     public String toString() {
-        return String.format("Employee %d%d", teamNumber, number);
+        return String.format("Employee %d%d", teamNumber + 1, number + 1);
     }
 }
