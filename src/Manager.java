@@ -7,18 +7,24 @@ public class Manager extends Thread {
     private final CountDownLatch morningStandUp;
     private final CountDownLatch afternoonStandUp;
     private final Time time;
+    private final Metrics metrics;
     private volatile boolean occupied;
 
-    public Manager(List<List<Employee>> teams, CountDownLatch morningStandUp, CountDownLatch afternoonStandUp, Time time) {
+    public Manager(List<List<Employee>> teams, CountDownLatch morningStandUp, CountDownLatch afternoonStandUp, Time time, Metrics metrics) {
         this.teams = teams;
         this.morningStandUp = morningStandUp;
         this.afternoonStandUp = afternoonStandUp;
         this.time = time;
+        this.metrics = metrics;
         this.occupied = false;
     }
 
     public List<List<Employee>> getTeams() {
         return teams;
+    }
+
+    public Metrics getMetrics() {
+        return metrics;
     }
 
     public void run() {
@@ -28,7 +34,8 @@ public class Manager extends Thread {
             morningStandUp.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        } metrics.increaseWorkTime(time.getTime());
+
         standUp("Morning");
 
         workUntil(120);
@@ -37,21 +44,21 @@ public class Manager extends Thread {
 
         workUntil(240);
 
-        System.out.println(time + " Manager takes lunch.");
+        System.out.println(time + " Manager takes lunch."); int startTimeForMetrics = time.getTime();
         busyUntil(300);
-        System.out.println(time + " Manager returns from lunch.");
+        System.out.println(time + " Manager returns from lunch."); metrics.increaseLunchTime(time.getTime() - startTimeForMetrics);
 
         workUntil(360);
 
         meeting("2:00", 420);
 
         workUntil(480);
-        System.out.println(time + " Manager is waiting for status updates from tech leads.");
+        System.out.println(time + " Manager is waiting for status updates from tech leads.  Doing managerial work until they all show up."); startTimeForMetrics = time.getTime();
         try {
             afternoonStandUp.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        } metrics.increaseWorkTime(time.getTime() - startTimeForMetrics);
 
         standUp("Afternoon");
 
@@ -88,13 +95,13 @@ public class Manager extends Thread {
         teams.forEach(t -> {
             t.get(0).setOccupied(false);
             t.get(0).setStandUpDone(timeOfDay);
-        });
+        }); metrics.increaseMeetingTime(15);
     }
 
     private void work() {
         synchronized (time) {
             try {
-                time.wait();
+                time.wait(); if (!occupied) metrics.increaseWorkTime(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -102,9 +109,9 @@ public class Manager extends Thread {
     }
 
     private void meeting(String timeAsString, int endTime) {
-        System.out.println(time + " Manager enters " + timeAsString + " meeting.");
+        System.out.println(time + " Manager enters " + timeAsString + " meeting."); int startTimeForMetrics = time.getTime();
         busyUntil(endTime);
-        System.out.println(time + " Manager leaves " + timeAsString + " meeting.");
+        System.out.println(time + " Manager leaves " + timeAsString + " meeting."); metrics.increaseMeetingTime(endTime - startTimeForMetrics);
     }
 
     public void askQuestion(Employee employee) {
@@ -119,7 +126,7 @@ public class Manager extends Thread {
             System.out.println(time + " Manager meets about " + employee + "'s question.");
             int endTime = time.getTime() + 10;
             busyUntil(endTime);
-            System.out.println(time + " Manager finishes answering " + employee + "'s question");
+            System.out.println(time + " Manager finishes answering " + employee + "'s question."); metrics.increaseQuestionTime(10);
         }
     }
 }

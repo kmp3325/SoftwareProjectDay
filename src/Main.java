@@ -9,13 +9,13 @@ public class Main {
         final CountDownLatch morningStandUp = new CountDownLatch(3);
         final CountDownLatch afternoonStandUp = new CountDownLatch(3);
         List<List<Employee>> teams = new ArrayList<>();
-        Manager manager = new Manager(teams, morningStandUp, afternoonStandUp, time);
+        Manager manager = new Manager(teams, morningStandUp, afternoonStandUp, time, new Metrics());
 
         for (int i = 0; i < 3; i++) {
             final CountDownLatch teamStandUp = new CountDownLatch(3);
             teams.add(new ArrayList<>());
             for (int j = 0; j < 4; j++) {
-                Employee employee = new Employee(j, i, time, morningStandUp, afternoonStandUp, teamStandUp, manager);
+                Employee employee = new Employee(j, i, time, morningStandUp, afternoonStandUp, teamStandUp, manager, new Metrics());
                 teams.get(i).add(employee);
             }
         }
@@ -34,5 +34,10 @@ public class Main {
             }
             time.incrementTime();
         }
+        System.out.println("-----------------------------------METRICS-----------------------------------");
+        System.out.println("Manager - " + manager.getMetrics());
+        teams.forEach(t -> t.forEach(e -> {
+            System.out.println(e + " - " + e.getMetrics());
+        }));
     }
 }
