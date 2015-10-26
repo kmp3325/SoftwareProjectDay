@@ -7,7 +7,7 @@ public class Main {
     public static void main(String[] args) {
         final Time time = new Time();
         final CountDownLatch morningStandUp = new CountDownLatch(3);
-        final CountDownLatch afternoonStandUp = new CountDownLatch(3);
+        final CountDownLatch afternoonStandUp = new CountDownLatch(12);
         List<List<Employee>> teams = new ArrayList<>();
         Manager manager = new Manager(teams, morningStandUp, afternoonStandUp, time, new Metrics());
 
