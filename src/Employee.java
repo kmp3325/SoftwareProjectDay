@@ -57,12 +57,11 @@ public class Employee extends Thread {
         busyUntil(lunchTime + time.getTime());
         System.out.println(time + " "+ this + " returns from lunch."); metrics.increaseLunchTime(lunchTime);
 
-        if (number == 0) {
-            workUntil(480);
-            System.out.println(time + " " + this + " arrives at managers office for afternoon stand-up.");
-            afternoonStandUp.countDown(); int startTimeForMetrics = time.getTime();
-            waitUntilStandUpComplete("Afternoon"); metrics.increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 15); metrics.increaseMeetingTime(15);
-        }
+        workUntil(480);
+        System.out.println(time + " " + this + " arrives at managers office for afternoon stand-up.");
+        afternoonStandUp.countDown(); int startTimeForMetrics = time.getTime();
+        waitUntilStandUpComplete("Afternoon"); metrics.increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 15); metrics.increaseMeetingTime(15);
+
 
         int endOfDay = arrivalTime + lunchTime + 480;
         workUntil(endOfDay);
