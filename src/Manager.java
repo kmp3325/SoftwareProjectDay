@@ -3,20 +3,16 @@ import java.util.concurrent.CountDownLatch;
 
 public class Manager extends Thread {
 
-    private final List<List<Employee>> teams;
+
     private final CountDownLatch managerOffice;
     private boolean busy;
     private Time time;
-    public Manager(List<List<Employee>> teams,CountDownLatch latch, Time t)
+    public Manager(CountDownLatch latch, Time t)
     {
-        this.teams = teams;
+
         this.managerOffice = latch;
         this.busy = false;
         this.time = t;
-    }
-
-    public List<List<Employee>> getTeams() {
-        return teams;
     }
 
     public void run() {
@@ -36,14 +32,6 @@ public class Manager extends Thread {
             }else{
                 //TODO finish whatever manager is doing, then go to meeting.
             }
-
-            //   wait
-            // occupied = true
-            // while not 11
-            //   wait
-            // occupied = false
-            // determine lunch
-                // while not lunch and not occupied
             while (time.getTime() < 2400) {
                 Thread.sleep(10);
             }
@@ -57,12 +45,6 @@ public class Manager extends Thread {
             }else{
                 //TODO finish whatever he is doing, then go to lunch
             }
-            //   wait
-            // occupied = true
-            // while not end of lunch
-            //   wait
-            // occupied = false
-            // while not 2 and not occupied
             while(time.getTime() < 3600 ){
                 Thread.sleep(10);
             }
@@ -71,16 +53,6 @@ public class Manager extends Thread {
             }else{
                 //TODO finish whatever he is doing, then go to meeting.
             }
-            //   wait
-            // occupied = true
-            // while not 3
-            //   wait
-            // occupied = false
-            ;
-
-            // while not 5
-            //   wait
-            // print leaves at 5
             System.out.println(time.toString() + " Manager engages in daily planning activities.");
             while(time.getTime() < 5400){
                 Thread.sleep(10);
@@ -93,14 +65,24 @@ public class Manager extends Thread {
         }
     }
 
-    public synchronized void askQuestion(int employeeNumber) {
+
+    public synchronized void askQuestion(Employee e) {
         // while occupied
-        //   wait
-        // occupied = true
-        // while not end of 10 mins
-        //   wait
-        // print "Manager finishes answering employee X's question"
+        try {
+            while(this.busy){
+                e.wait(10);
+                wait(10);
+            }
+        this.busy = true;
+        wait(100);
+        e.wait(10);
+        System.out.println(time.toString() + " Manager answers question for " +
+            e.toString());
+
         // occupied = false
+        }catch(InterruptedException ie){
+            ie.printStackTrace();
+        }
     }
     public synchronized void morningStandUp(){
         this.busy = true;

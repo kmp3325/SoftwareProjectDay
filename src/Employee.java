@@ -10,8 +10,9 @@ public class Employee extends Thread {
     private boolean arrived;
     private Time time;
     private CountDownLatch standUpLatch;
+    private Manager manager;
 
-    public Employee(Time t,CountDownLatch standUpLatch, Main main, int number, int teamNumber) {
+    public Employee(Manager m, Time t,CountDownLatch standUpLatch, Main main, int number, int teamNumber) {
         this.main = main;
         this.number = number;
         this.teamNumber = teamNumber;
@@ -20,6 +21,7 @@ public class Employee extends Thread {
         this.arrived = false;
         this.standUpLatch = standUpLatch;
         this.time = t;
+        this.manager = m;
     }
 
 
@@ -36,12 +38,13 @@ public class Employee extends Thread {
                 lunchTime = 2400 + lunchTime;
                 sleep(arrivalTime);
                 // print arrived
-                System.out.println(time.toString() + " Employee" + teamNumber
-                        + number + " has arrived.");
+                System.out.println(this.toString() + " has arrived.");
                 // arrived = true
                 this.arrived = true;
                 if (this.number == 1) {
                     standUpLatch.countDown();
+                    this.occupied = true;
+
                 }
                 //   managerStandUp
                 //   standUp
@@ -50,30 +53,22 @@ public class Employee extends Thread {
                 while (time.getTime() < 5400) {
 
                     while (time.getTime() <= lunchTime) {
-                        Thread.sleep(10);
+                        work();
+
                     }
-                    System.out.println(time.toString() + " Employee" + teamNumber
-                            + number + " has left for lunch.");
+                    System.out.println(this.toString() + " has left for lunch.");
                     Thread.sleep(lunchDuration);
-                    System.out.println(time.toString() + " Employee" + teamNumber
-                            + number + " has returned from lunch");
+                    System.out.println(this.toString() + " has returned from lunch");
 
                     while (time.getTime() <= leaveTime) {
-                        Thread.sleep(10);
+                        work();
+                        //Thread.sleep(10);
                     }
 
-                    System.out.println(time.toString() + " Employee" + teamNumber
-                            + number + " has left for the day");
+                    System.out.println(this.toString() + " has left for the day");
                     break;
 
                     }
-                //while not lunch and not occupied
-                //   wait
-                // lunch break (occupied)
-                // determine end of day
-                // while not end of day and not occupied
-                //   wait
-                // print this employee leaves
                 }catch(InterruptedException ie){
                     ie.printStackTrace();
                     }
@@ -111,22 +106,40 @@ public class Employee extends Thread {
 
     public void work() {
         // if has question (some really low percentage)
-        //   occupied = true
-        //   print "has a question"
-        //   tech lead.askQuestion()
-        // else
-        //   wait
+        int questionChance = (int) (Math.random() * 1000 + 1);
+        if(questionChance == 9){
+            this.occupied = true;
+            System.out.println(this.toString() +  " has a question");
+            askQuestion(this.number);
+        }
+
+        else{
+            try {
+                Thread.sleep(10);
+            }
+            catch(InterruptedException ie){
+                ie.printStackTrace();
+            }
+        }
+
     }
 
     public synchronized void askQuestion(int employeeNumber) {
-        // while occupied
-        //   wait
-        // occupied = true
-        // if can answer
-        //   print "tech lead answers X's question"
-        // else
-        //   print "tech lead cannot answer question, must ask manager"
-        //   manager.askQuestion()
-        // occupied = false
+        int answerChance = (int) (Math.random() * 2 + 1);
+        if(answerChance == 1){
+            System.out.println(time.toString() + " Tech lead answers for Employee" +
+                teamNumber + number);
+        }
+        else{
+            this.manager.askQuestion(this);
+        }
+        this.occupied = false;
+    }
+
+    @Override
+    public String toString(){
+        String s = time.toString() + " Employee" + teamNumber
+                + number;
+        return s;
     }
 }
