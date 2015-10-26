@@ -155,13 +155,12 @@ public class Employee extends Thread {
         synchronized (time) {
             if (Math.random() > CHANCE_FOR_QUESTION_ON_GIVEN_MINUTE && !occupied) {
                 occupied = true;
-                System.out.println(time + " " + this + " has a question.");
-                metrics.increaseNumberOfQuestions(1); int startTimeForMetrics = time.getTime();
-                if (number == 0) {
-                    manager.askQuestion(this);
+                System.out.println(time + " " + this + " has a question."); metrics.increaseNumberOfQuestions(1);
+                if (number == 0) {  int startTimeForMetrics = time.getTime();
+                    manager.askQuestion(this); metrics.increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); metrics.increaseQuestionTime(10);
                 } else {
                     manager.getTeams().get(teamNumber).get(0).askQuestion(this);
-                } metrics.increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); metrics.increaseQuestionTime(10);
+                }
                 occupied = false;
             } else {
                 try {
@@ -188,7 +187,7 @@ public class Employee extends Thread {
                 System.out.println(time + " tech lead answered " + employee + "'s question.");
             } else {
                 System.out.println(time + " tech lead cannot answer " + employee + "'s question, going to manager."); int startTimeForMetrics = time.getTime();
-                manager.askQuestion(employee); metrics.increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); metrics.increaseQuestionTime(10);
+                manager.askQuestion(employee); metrics.increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); metrics.increaseQuestionTime(10); employee.getMetrics().increaseWaitingForManagerTime(time.getTime() - startTimeForMetrics - 10); employee.getMetrics().increaseQuestionTime(10);
             }
             occupied = false;
         }
