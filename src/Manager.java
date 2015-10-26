@@ -53,7 +53,7 @@ public class Manager extends Thread {
         meeting("2:00", 420);
 
         workUntil(480);
-        System.out.println(time + " Manager is waiting for status updates from tech leads.  Doing managerial work until they all show up."); startTimeForMetrics = time.getTime();
+        System.out.println(time + " Manager is waiting for status updates from all employees.  Doing managerial work until they all show up."); startTimeForMetrics = time.getTime();
         try {
             afternoonStandUp.await();
         } catch (InterruptedException e) {
@@ -92,10 +92,10 @@ public class Manager extends Thread {
         busyUntil(endTime);
         System.out.println(time + " " + timeOfDay + " stand-up meeting ends.");
         occupied = false;
-        teams.forEach(t -> {
-            t.get(0).setOccupied(false);
-            t.get(0).setStandUpDone(timeOfDay);
-        }); metrics.increaseMeetingTime(15);
+        teams.forEach(t -> t.forEach(e -> {
+            e.setOccupied(false);
+            e.setStandUpDone(timeOfDay);
+        })); metrics.increaseMeetingTime(15);
     }
 
     private void work() {
